@@ -7,4 +7,7 @@ The motivation behind this project is that a lot of the mechanics in the game re
 
 Here is how it works: (which is REALLY inefficient, but hey, I wanted it work on my local save file)
 
-Because I had the game on my phone I used scrcpy to mirror my phone screen onto my computer
+Because I had the game on my phone I used scrcpy to mirror my phone screen onto my computer, and I used computer vision to read the game state from the pixels on screen. I have an **environment** class that manages all of this:
+![7ukj0n](https://github.com/MattHandzel/PlayingForager/assets/39449480/f0402d6a-92ac-4474-9d36-439a50d272dd)
+
+The notable states for this project is the agent's health, current experience points, as well as their energy. When these values change then the environment can detect this and let the agent know.
