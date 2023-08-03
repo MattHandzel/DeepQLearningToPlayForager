@@ -31,6 +31,7 @@ class Gym:
     self.agent = Agent(self)
     # input dims = [[68, 135], 3]
     # output dims = 6
+    
     self.agent.define_model([[68, 135, 1], 2], self.action_space_size)
     stats = self.manager.loadMetadata()
     self.nEpisodes = stats["nEpisodes"]
@@ -200,6 +201,7 @@ class Gym:
         self.updateMetadata()
         self.resetEnv()
         print("KILLING")
+
   def resetEnv(self):
     print("RESETING ENV")
     restarting = True
@@ -289,5 +291,5 @@ class Gym:
     self.agent.updateTargetModel()
 
 if __name__ == "__main__":
-  gym = Gym()
+  gym = Gym(False)
   gym.run()

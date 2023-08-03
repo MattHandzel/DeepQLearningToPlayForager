@@ -1,7 +1,6 @@
 import numpy as np
 import pickle as pkl
 import time, json, os, random
-from keras.optimizers import adam_v2
 import matplotlib.pyplot as plt
 from utils import * 
 #from tensorflow.python.keras.mixed_precision import experimental
@@ -115,7 +114,7 @@ class Manager:
   def saveSession(self, agent, nEpisodes):
     agent.model.save(f"./models/model_{formatNumbersWithZeros(nEpisodes, 4)}")
     os.mkdir(f"./models/model_{formatNumbersWithZeros(nEpisodes, 4)}/optimizer/")
-    pkl.dump(agent.optimizer.get_weights(), open(f"./models/model_{formatNumbersWithZeros(nEpisodes, 4)}/optimizer/weights.p", "wb"))
+    # pkl.dump(agent.optimizer., open(f"./models/model_{formatNumbersWithZeros(nEpisodes, 4)}/optimizer/weights.p", "wb"))
 
   def compresSizeOfdata(self):
     '''This function wil make the state image be in float16 instead of float32 which about halves the space the data takes up'''

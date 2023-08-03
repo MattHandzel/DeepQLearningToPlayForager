@@ -3,7 +3,7 @@ from keras import layers
 from numba.core.decorators import jit
 #from tensorflow.python.keras.layers.merge import concatenate
 from tensorflow.keras import utils
-from keras.optimizers import adam_v2
+from keras.optimizers import Adam
 import tensorflow as tf
 import numpy as np
 from collections import deque
@@ -26,7 +26,7 @@ class Agent:
   '''This class is what is going to be interacting with the environment, it has the brains, it is a normal agent in RL'''
   
   # Optimizer we use
-  optimizer = adam_v2.Adam(learning_rate=0.003)
+  optimizer = Adam(learning_rate=0.003)
   # What will be used to calculate discounted reward
   gamma = 0.95
   # The agent's experience replay
@@ -74,8 +74,14 @@ class Agent:
       np.random.shuffle(data)
       x, y, actions = self.processDataforTraining(False, data)
 
+    if len(data) <= 1:
+      print("DUDE THERE IS NO DATA IN THE EXPERIENCE REPLAY, YOU NEED TO ADD SOME DATA TO THE EXPERIENCE REPLAY BEFORE YOU CAN TRAIN THE MODEL")
+      return 999999
+
     # This will hold the value of the losses to be printed to the console so we can see the agents loss
     loss_values = [0,0]
+    
+    self.optimizer.build(self.model.trainable_variables)
 
     # This will repeat x amount of epochs
     for z in range(epochs):
@@ -94,6 +100,7 @@ class Agent:
         # Creates a one hot encoding for the actions so that we can make a prediction on the state and then mask the values of everything besides action since that is the only reward value that we know
         movement_one_hot = tf.one_hot(actions[0], self.env.action_space_size[0])
         action_one_hot = tf.one_hot(actions[1], self.env.action_space_size[1])
+
 
         # This is going to calcualte the gradient for the movement output
         with tf.GradientTape() as tape:
@@ -115,8 +122,10 @@ class Agent:
           y_pred_action = tf.multiply(self.model([x[0][i:i+batch_size],x[1][i:i+batch_size]], training = True)[1], action_one_hot[i:i+batch_size])
           y_actual_action = tf.multiply(y[1][i:i+batch_size], action_one_hot[i:i+batch_size])
           loss_value_action = keras.losses.MSE(y_actual_action, y_pred_action)
+        
         loss_values[1] += loss_value_action
         grads_action = tape.gradient(loss_value_action, self.model.trainable_variables)
+
         self.optimizer.apply_gradients((grad, var) for (grad, var) in zip(grads_action, self.model.trainable_variables) if grad is not None)
       # if the verbose is greater than 0 then output the loss to the console
       if verbose > 0:
@@ -132,6 +141,7 @@ class Agent:
       x = np.array(self.experienceReplay,object).transpose()
     else:
       x = np.array(data, object).transpose()
+      
     states = [(np.array([np.array(z[0]) for z in x[0]])), (np.array([np.array(z[1:-1]) for z in x[0]]))]
     next_states = [(np.array([np.array(z[0]) for z in x[-1]])), (np.array([np.array(z[1:-1]) for z in x[-1]]))]
     dones = (x[3].astype(np.int8) -1) *-1
@@ -148,7 +158,6 @@ class Agent:
         
     return states, rewards_q, actions
   
-  
   def updateTargetModel(self):
     self.target_model.set_weights(self.model.get_weights())
   
@@ -157,5 +166,8 @@ class Agent:
 
 if __name__ == "__main__":
   agent = Agent(2)
-  agent.define_model([[68, 135,1], 3], [6])
+  agent.define_model([[68, 135,1], 3], [4, 2])
   print(agent.model.summary())
+
+  # Make the model predict on a random input to test it
+  print(agent.model.predict([np.random.rand(1,68,135,1), np.random.rand(1,3)]))

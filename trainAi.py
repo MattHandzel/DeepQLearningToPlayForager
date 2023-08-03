@@ -42,15 +42,19 @@ class Trainer:
     data = np.concatenate(self.manager.loadAllData())
     np.random.shuffle(data)
 
+    if data.shape[0] == 0:
+      raise Exception("No data in the data folder")
+
     s_time = time.time()
     print("TRAINING MODEL...")
     for b in range(epochs // epochsBeforeUpdating):
-      try:
-        losses = self.gym.agent.train(epochsBeforeUpdating, 128, False, data = self.improveQualityOfData(data[:len(data)//2]), verbose = 1)
-        losses = self.gym.agent.train(epochsBeforeUpdating, 128, False, data = self.improveQualityOfData(data[len(data)//2:]), verbose = 1)
-        print(f"\tTIME: {round((time.time() - s_time) * 10) / 10}\tLOSS {(b * epochsBeforeUpdating)} / {epochs}: {losses}")
-      except:
-        self.gym.agent.updateTargetModel()
+      # try:
+      losses = self.gym.agent.train(epochsBeforeUpdating, 128, False, data = self.improveQualityOfData(data[:len(data)//2]), verbose = 1)
+      losses = self.gym.agent.train(epochsBeforeUpdating, 128, False, data = self.improveQualityOfData(data[len(data)//2:]), verbose = 1)
+      print(f"\tTIME: {round((time.time() - s_time) * 10) / 10}\tLOSS {(b * epochsBeforeUpdating)} / {epochs}: {losses}")
+      # except:
+      #   print("ERROR")
+      #   self.gym.agent.updateTargetModel()
     print("SAVING MODELS...")
     self.gym.nEpisodes += 1
     self.gym.updateMetadata()
@@ -62,29 +66,30 @@ class Trainer:
     indexes = list(np.arange(len(data)))
 
     while i < len(indexes):
-        self.addNoise(data[i], random.random()) 
-        self.changeBrightness(data[i], random.random())
-        self.applyColorFilter(data[i], random.random())
-        plt.imshow(data[i][0][0])
+        self.addNoise(data[i]) 
+        self.changeBrightness(data[i], np.random.uniform(0.95, 1.05))
+        self.applyColorFilter(data[i], np.random.uniform(0.90, 1.1),np.random.uniform(0.90, 1.1),np.random.uniform(0.90, 1.1))
+        # plt.imshow(data[i][0][0])
         plt.show()
         i += 1
     return data
 
-  @numba.njit
+  
   def addNoise(self, data, noiseFactor = 0.1):
     '''Will be input a piece of data like: (state, action, reward, done, next_state)'''  
     data[0][0] = data[0][0] + (np.random.random(size=data[0][0].shape) - 0.5) * noiseFactor ** 2
     data[-1][0] = data[-1][0] + (np.random.random(size=data[-1][0].shape) - 0.5) * noiseFactor ** 2
   
-  @numba.njit
+  
   def changeBrightness(self, data, brightnessFactor):
     '''Will be input a piece of data like: (state, action, reward, done, next_state)'''
     data[0][0] = data[0][0] * (brightnessFactor)
     data[-1][0] = data[-1][0] * (brightnessFactor)
   
-  @numba.njit
+  
   def applyColorFilter(self, data, redFactor, greenFactor, blueFactor):
-    data[0][0] *= [redFactor, greenFactor, blueFactor]
+    return
+    data[0][0] = np.dot(data[0][0][:], np.array([redFactor, greenFactor, blueFactor]))
     data[-1][0] *= [redFactor, greenFactor, blueFactor]
 
 if __name__ == "__main__":
