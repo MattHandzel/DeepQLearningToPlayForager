@@ -98,7 +98,8 @@ class Input:
         self.mouse.release(mouse.Button.left)'''
 
     # If the key is escape, then stop the program
-    elif key == Key.caps_lock:
+    elif key == Key.esc or key == Key.caps_lock:
+      print("Stopping the listener...")
       self.terminated = True
       self.stopListener()
     
@@ -126,3 +127,6 @@ if __name__ == "__main__":
   # Testing the input class
   player = Input() 
   player.run()
+  while True:
+    print(player.mouse.position)
+    time.sleep(0.1)
