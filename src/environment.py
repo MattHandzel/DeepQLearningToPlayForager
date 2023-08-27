@@ -15,9 +15,9 @@ class Environment:
   
   heartYPosition = screenY0 + 10
   # Position that we will check for each heart
-  heart1Position = (1019 - 44, heartYPosition)
-  heart2Position = (1041 - 44, heartYPosition)
-  heart3Position = (1064 - 44, heartYPosition)
+  heart1Position = (1019, heartYPosition)
+  heart2Position = (1041, heartYPosition)
+  heart3Position = (1064, heartYPosition)
   
   # The length of the heart (we will be checking in a 7x7 grid, this is used to prevent a bad reading)
   heartLength = 7
@@ -123,7 +123,8 @@ class Environment:
     '''Inputs the game screen and it returns the amount of energy that the player has'''
     # We get the dimensions of the energy bar, and then we just get one line, the amount of energy we have is sum of the sum of the pixels and if they are above 0.3, 
     # this is because the energy bar's color when there is energy is a green, and when it is emptied, it is close to a black. 
-    energyBar = image[28:29, 6:46][0]
+    energyBar = image[28 + 7: 29 + 7, 6 + 45: 46 + 45][0]
+    
     totalEnergy = 0
 
     # This is where that summination comes in
@@ -202,5 +203,5 @@ class Environment:
 if __name__ == "__main__":
   # This is to test to see if the environment outputs the correct values
   env = Environment()
-  env.run(framerate=1)
-  # env.setMainScreenMask()
+  # env.run(framerate=1)
+  env.setMainScreenMask()

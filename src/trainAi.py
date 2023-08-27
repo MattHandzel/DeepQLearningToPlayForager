@@ -5,18 +5,14 @@ from mapInput import *
 from environment import *
 from agent import *
 from dataManager import Manager
-from gym import *
 
 import time, keras
-import numba
 
 class Trainer:
   def __init__(self, gym):
     self.gym = gym
     self.manager = self.gym.manager
     self.env = self.gym.env
-    self.gym.input.stopListener()
-    self.gym.input.terminated = True
 
   def train(self, epochs, epochsBeforeUpdating):
     print("CURRENTLY TRAINING MODEL...")
@@ -25,9 +21,9 @@ class Trainer:
       for i in range(epochsBeforeUpdating):
         try:
           data = (self.manager.loadRandomSample())
-          print(f"\tTIME: {round((time.time() - s_time) * 10) / 10}\tLOSS {(b * epochsBeforeUpdating) + (i+1)} / {epochs}: {np.sum(self.gym.agent.train(16, False, data = data))}")
+          print(f"\tTIME: {round((time.time() - s_time) * 10) / 10}\tLOSS {(b * epochsBeforeUpdating) + (i+1)} / {epochs}: {np.sum(self.gym.agent.train(16, False, data = data, verbose = 0))}")
         except Exception as e:
-          pass
+          print(e)
  
       print("UPDATING TARGET MODEL")
       self.gym.agent.updateTargetModel()
@@ -48,8 +44,8 @@ class Trainer:
     print("TRAINING MODEL...")
     for b in range(epochs // epochsBeforeUpdating):
       # try:
-      losses = self.gym.agent.train(epochsBeforeUpdating, 128, False, data = self.improveQualityOfData(data[:len(data)//2]), verbose = 1)
-      losses = self.gym.agent.train(epochsBeforeUpdating, 128, False, data = self.improveQualityOfData(data[len(data)//2:]), verbose = 1)
+      losses = self.gym.agent.train(epochsBeforeUpdating, 32, False, data = self.improveQualityOfData(data[:len(data)//2]), verbose = 0)
+      losses = self.gym.agent.train(epochsBeforeUpdating, 32, False, data = self.improveQualityOfData(data[len(data)//2:]), verbose = 0)
       print(f"\tTIME: {round((time.time() - s_time) * 10) / 10}\tLOSS {(b * epochsBeforeUpdating)} / {epochs}: {losses}")
       # except:
       #   print("ERROR")
@@ -91,6 +87,10 @@ class Trainer:
     data[0][0] = np.dot(data[0][0][:], np.array([redFactor, greenFactor, blueFactor]))
     data[-1][0] *= [redFactor, greenFactor, blueFactor]
 
-if __name__ == "__main__":
-  trainer = Trainer()
-  trainer.trainOnAllData(64, 4)
+# if __name__ == "__main__":
+  
+  # from gym import *
+  # gym = Gym(False)
+  # trainer = Trainer(gym)
+  
+  # trainer.trainOnAllData(64, 4)

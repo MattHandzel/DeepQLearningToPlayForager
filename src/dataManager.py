@@ -114,8 +114,17 @@ class Manager:
     agent.model.set_weights(model_weights)
   
   def saveSession(self, agent, nEpisodes):
-    agent.model.save(f"./models/model_{formatNumbersWithZeros(nEpisodes, 4)}")
-    os.mkdir(f"./models/model_{formatNumbersWithZeros(nEpisodes, 4)}/optimizer/")
+    offset = 0
+    try:
+      agent.model.save(f"./models/model_{formatNumbersWithZeros(nEpisodes + offset, 4)}")
+      os.mkdir(f"./models/model_{formatNumbersWithZeros(nEpisodes + offset, 4)}/optimizer/")
+      not_saved = False
+    except Exception as a:
+      while os.path.exists(f"./models/model_{formatNumbersWithZeros(nEpisodes + offset, 4)}"):
+        offset += 1
+      agent.model.save(f"./models/model_{formatNumbersWithZeros(nEpisodes + offset, 4)}")
+      os.mkdir(f"./models/model_{formatNumbersWithZeros(nEpisodes + offset, 4)}/optimizer/")
+
     # pkl.dump(agent.optimizer., open(f"./models/model_{formatNumbersWithZeros(nEpisodes, 4)}/optimizer/weights.p", "wb"))
 
   def compresSizeOfdata(self):
@@ -182,7 +191,8 @@ class Manager:
 
 if __name__ == "__main__":
   manager = Manager()
-  print(manager.loadRandomSample()[0][2])
-  manager.modifyRewardValues()
-  print(manager.loadRandomSample()[0][2])
+  plt.imshow(manager.loadRandomSample()[0][0])
+  plt.show()
+  plt.imshow(manager.loadRandomSample()[0][0])
+  plt.show()
   
