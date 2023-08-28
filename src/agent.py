@@ -78,16 +78,18 @@ class Agent:
     self.model.compile("adam", keras.losses.mse)
     self.target_model.compile("adam", keras.losses.mse)
 
-  def train(self, epochs, batch_size = 16, notGonnaBeData = True, data = None, verbose = 0):
+  def train(self, epochs, batch_size = 16, notGonnaBeData = True, data = None, verbose = 0, use_target = True):
     '''This will train the agent to try to make it get closer to the optimal solution, the system with notGonnaBeData
      is a botched fix so that the agent can be trained on outside data that isn't in its experience replay'''
     if notGonnaBeData:
       data = self.experienceReplay
+      assert len(data) > 0
       np.random.shuffle(data)
-      x_base, y_base, actions_base = self.processDataforTraining(False, data)
+      x_base, y_base, actions_base = self.processDataforTraining(False, data, use_target = use_target)
     else:
       np.random.shuffle(data)
-      x_base, y_base, actions_base = self.processDataforTraining(False, data)
+      assert len(data) > 0
+      x_base, y_base, actions_base = self.processDataforTraining(False, data, use_target = use_target)
 
     if len(data) <= 1:
       print("DUDE THERE IS NO DATA IN THE EXPERIENCE REPLAY, YOU NEED TO ADD SOME DATA TO THE EXPERIENCE REPLAY BEFORE YOU CAN TRAIN THE MODEL")
@@ -157,7 +159,7 @@ class Agent:
     return np.sum(loss_values) / len(x)
   
   
-  def processDataforTraining(self, notGonnaBeData = True, data = None):
+  def processDataforTraining(self, notGonnaBeData = True, data = None, use_target = True):
     '''This functions process the data that we get (in the form of state, action, reward, done, next_state), and output training data for the nn'''
     if notGonnaBeData:
       x = np.array(self.experienceReplay,object).transpose().tolist()
@@ -169,12 +171,20 @@ class Agent:
     rewards = (np.array(x[2], dtype=np.float16))
 
     actions = [[z[0] for z in (x[1])], [z[1] for z in (x[1])]]
-    rewards_q = self.target_model.predict(states, workers = 8, use_multiprocessing=True, verbose=-1) # Rewards predicted for this state
-    rewards_Q = self.target_model.predict(next_states, workers = 8, use_multiprocessing=True, verbose=-1) # rewards predicted for next state
-    rewards_Q = [np.max(rewards_Q[0],1), np.max(rewards_Q[1],1)]
-    
+    if use_target:
+      rewards_q = self.target_model.predict(states, workers = 8, use_multiprocessing=True, verbose=-1) # Rewards predicted for this state
+      rewards_Q = self.target_model.predict(next_states, workers = 8, use_multiprocessing=True, verbose=-1) # rewards predicted for next state
+      rewards_Q = [np.max(rewards_Q[0],1), np.max(rewards_Q[1],1)]
+    else:
+      pred = self.target_model.predict(states, workers = 8, use_multiprocessing=True, verbose=-1)
+      rewards_q = [np.zeros(shape=pred[0].shape), np.zeros(shape=pred[1].shape)]
+      for i in range(len(rewards)):
+        rewards_q[0][i][actions[0][i]] = rewards[i] 
+        rewards_q[1][i][actions[1][i]] = rewards[i]
+
+
+      return states, rewards_q, actions
     for i in range(len(rewards)):
-      b = rewards[i] + rewards_Q[0][i] * self.gamma * dones[i][0]
       rewards_q[0][i][actions[0][i]] = rewards[i] + rewards_Q[0][i] * self.gamma * dones[i][0]
       rewards_q[1][i][actions[1][i]] = rewards[i] + rewards_Q[1][i] * self.gamma * dones[i][0]
         

@@ -189,7 +189,7 @@ class Environment:
     
   def checkIfMainScreen(self):
     '''Checks if we are at the main screen yet, if we are then return true, by using the main screen mask'''
-    return (np.sum((self.mainScreenMask - self.getGameScreen()[80:140,30:600]) ** 2) / (self.mainScreenMask.shape[0] * self.mainScreenMask.shape[1] * self.mainScreenMask.shape[2])) < 0.01
+    return (np.sum((self.mainScreenMask - self.getGameScreen()[80:140,30:600]) ** 2) / (self.mainScreenMask.shape[0] * self.mainScreenMask.shape[1] * self.mainScreenMask.shape[2])) < 0.015
   
   def setMainScreenMask(self):
     pkl.dump(self.getGameScreen()[80:140,30:600], open("./masks/mainScreenMask.p", "wb"))
@@ -204,4 +204,6 @@ if __name__ == "__main__":
   # This is to test to see if the environment outputs the correct values
   env = Environment()
   # env.run(framerate=1)
-  env.setMainScreenMask()
+  # env.setMainScreenMask()
+  plt.imshow(env.mainScreenMask)
+  plt.show()
