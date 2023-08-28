@@ -67,8 +67,13 @@ class Agent:
       vision_2_1 = layers.Dropout(0.1)(layers.LeakyReLU()(layers.MaxPool2D((2,2), strides=(2,2))(layers.Conv2D(32, (5,5))(vision))))
       vision_3_1 = layers.Dropout(0.1)(layers.LeakyReLU()(layers.MaxPool2D((2,2), strides=(2,2))(layers.Conv2D(32, (3,3))(vision_2_1))))
       vision_4_1 = layers.Dropout(0.1)(layers.LeakyReLU()(layers.MaxPool2D((2,2), strides=(2,2))(layers.Conv2D(32, (3,3))(vision_3_1))))
+      vision_2_1 = layers.Dropout(0.1)(layers.LeakyReLU()(layers.MaxPool2D((2,2), strides=(2,2))(layers.Conv2D(32, (5,5))(vision))))
+      vision_3_1 = layers.Dropout(0.1)(layers.LeakyReLU()(layers.MaxPool2D((2,2), strides=(2,2))(layers.Conv2D(32, (3,3))(vision_2_1))))
+      vision_4_1 = layers.Dropout(0.1)(layers.LeakyReLU()(layers.MaxPool2D((2,2), strides=(2,2))(layers.Conv2D(32, (3,3))(vision_3_1))))
       dense_5_1 = layers.Dense(64)(layers.LeakyReLU()(layers.Flatten()(vision_4_1)))
 
+      movementOutput = layers.Dense(output_dims[0], name="movementOutput")(dense_5_1)
+      actionOutput = layers.Dense(output_dims[1], name = "actionOutput")(dense_5_1)
       movementOutput = layers.Dense(output_dims[0], name="movementOutput")(dense_5_1)
       actionOutput = layers.Dense(output_dims[1], name = "actionOutput")(dense_5_1)
 
@@ -97,12 +102,17 @@ class Agent:
 
     
 
+    
+
     # This will hold the value of the losses to be printed to the console so we can see the agents loss
     loss_values = [0,0]
 
 
     # This will repeat x amount of epochs
     for z in range(epochs):
+      indicies =(np.arange(len(x_base)))
+      np.random.shuffle(indicies)
+      # self.optimizer.build(self.model.trainable_variables)
       indicies =(np.arange(len(x_base)))
       np.random.shuffle(indicies)
       # self.optimizer.build(self.model.trainable_variables)
@@ -113,6 +123,9 @@ class Agent:
       # x = [np.array([x[0][z] for z in indicies]), np.array([x[1][z] for z in indicies])]
       # y = [np.array([y[0][z] for z in indicies]), np.array([y[1][z] for z in indicies])]
 
+      x = np.array([x_base[z] for z in indicies])
+      y = [[np.array([y_base[0][z] for z in indicies])],[np.array([y_base[1][z] for z in indicies])]]
+      actions = [np.array([actions_base[0][z] for z in indicies]), np.array([actions_base[1][z] for z in indicies])]
       x = np.array([x_base[z] for z in indicies])
       y = [[np.array([y_base[0][z] for z in indicies])],[np.array([y_base[1][z] for z in indicies])]]
       actions = [np.array([actions_base[0][z] for z in indicies]), np.array([actions_base[1][z] for z in indicies])]
@@ -130,11 +143,15 @@ class Agent:
           # Muliplies the predicted reward of the model on the batch by the one hot mask so that we only train on the action chosen, these are the predicted values
           # y_pred_movement = tf.multiply(self.model([x[0][i:i+batch_size]],x[1][i:i+batch_size]], training = True)[0], movement_one_hot[i:i+batch_size])
           y_pred_movement = tf.multiply(self.model([x[i:i+batch_size]], training = True)[0], movement_one_hot[i:i+batch_size])
+          # y_pred_movement = tf.multiply(self.model([x[0][i:i+batch_size]],x[1][i:i+batch_size]], training = True)[0], movement_one_hot[i:i+batch_size])
+          y_pred_movement = tf.multiply(self.model([x[i:i+batch_size]], training = True)[0], movement_one_hot[i:i+batch_size])
           # Multiplies the actual reward by the mask to get the actual values
+          y_actual_movement = tf.multiply(y[0][0][i:i+batch_size], movement_one_hot[i:i+batch_size])
           y_actual_movement = tf.multiply(y[0][0][i:i+batch_size], movement_one_hot[i:i+batch_size])
           # Figures out the losses (we're using mse because its kinda cool)
           loss_value_movement = keras.losses.MSE(y_actual_movement, y_pred_movement)
         # Appends the loss we got so that we can show the human (me :D) the loss of the model
+        loss_values[0] += np.sum(loss_value_movement)
         loss_values[0] += np.sum(loss_value_movement)
         # Gets the gradient (i dunno how this works)
         grads_movement = tape.gradient(loss_value_movement, self.model.trainable_variables)
@@ -145,8 +162,11 @@ class Agent:
         with tf.GradientTape() as tape:
           y_pred_action = tf.multiply(self.model([x[i:i+batch_size]], training = True)[1], action_one_hot[i:i+batch_size])
           y_actual_action = tf.multiply(y[1][0][i:i+batch_size], action_one_hot[i:i+batch_size])
+          y_pred_action = tf.multiply(self.model([x[i:i+batch_size]], training = True)[1], action_one_hot[i:i+batch_size])
+          y_actual_action = tf.multiply(y[1][0][i:i+batch_size], action_one_hot[i:i+batch_size])
           loss_value_action = keras.losses.MSE(y_actual_action, y_pred_action)
         
+        loss_values[1] += np.sum(loss_value_action)
         loss_values[1] += np.sum(loss_value_action)
         grads_action = tape.gradient(loss_value_action, self.model.trainable_variables)
 
@@ -154,8 +174,10 @@ class Agent:
       # if the verbose is greater than 0 then output the loss to the console
       if verbose > 0:
         print(f"\t\t\tLOSS: {loss_values}")
+        print(f"\t\t\tLOSS: {loss_values}")
     
     # returns the average loss values for the epochs we did
+    return np.sum(loss_values) / len(x)
     return np.sum(loss_values) / len(x)
   
   
@@ -163,8 +185,14 @@ class Agent:
     '''This functions process the data that we get (in the form of state, action, reward, done, next_state), and output training data for the nn'''
     if notGonnaBeData:
       x = np.array(self.experienceReplay,object).transpose().tolist()
+      x = np.array(self.experienceReplay,object).transpose().tolist()
     else:
       x = np.array(data, object).transpose().tolist()
+    states = np.expand_dims(np.array(x[0], dtype=np.float16),-1)
+    next_states = np.expand_dims(np.array(x[4], dtype=np.float16), -1)
+    dones = (np.array(x[3], dtype=np.int8) - 1) *-1
+    rewards = (np.array(x[2], dtype=np.float16))
+    x = np.array(data, object).transpose().tolist()
     states = np.expand_dims(np.array(x[0], dtype=np.float16),-1)
     next_states = np.expand_dims(np.array(x[4], dtype=np.float16), -1)
     dones = (np.array(x[3], dtype=np.int8) - 1) *-1
@@ -198,10 +226,13 @@ class Agent:
     # return self.model.predict(np.expand_dims(state[0],0), np.expand_dims(state[1:-1],0)])
     # if(state.shape[0] == 1):
     #   return self.model.predict(state, verbose=0)
+    # if(state.shape[0] == 1):
+    #   return self.model.predict(state, verbose=0)
     return self.model.predict(np.expand_dims(state,0), verbose=0)
 
 if __name__ == "__main__":
   agent = Agent(2)
+  agent.define_model([50, 50,1], [4, 2])
   agent.define_model([50, 50,1], [4, 2])
   print(agent.model.summary())
 

@@ -41,7 +41,6 @@ class Trainer:
 
   def improveQualityOfData(self, original):
     '''By adding this noise it helps prevent overfitting'''
-    return original
     data = original.copy()
     i = 0
     if(data.shape == 3):
