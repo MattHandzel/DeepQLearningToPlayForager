@@ -23,7 +23,7 @@ class Gym:
   
   trainTimes = 10
 
-  explorationRate = 0.4
+  explorationRate = 0.9
 
 
 
@@ -213,7 +213,7 @@ class Gym:
     delay = 0.25
     while restarting:
       while not self.env.checkIfMainScreen():
-        self.trainOnPrevData(1000)
+        self.train(1,1)
         self.input.keyboard.press('e')
       # self.trainOnPrevData(50000)
       # press play button
