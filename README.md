@@ -20,3 +20,10 @@ The agent also sees a black-and-white area surrounding it as the input:
 From that, it outputs two vectors, the first one being the movement vector and the agent predicts which direction (right, left, up, down, none) will maximize its reward function. The second output is where the agent predicts which action (mining or no mining) will maximize its reward function as well. The agent selects the action with the highest reward.
 
 With the current state of the project, the agent gets penalized 0.01 reward for every timestep and it gains reward whenever it mines a resource (the better the resource the more reward) this is tracked through the experience points the agent.
+
+## Training
+The agent is trained using Deep Q Learning and uses an epsilon-greedy strategy:
+
+ε=1
+![lower](https://github.com/MattHandzel/DeepQLearningToPlayForager/assets/39449480/41573ba3-5636-4d94-87af-936db5445d5b)
+
