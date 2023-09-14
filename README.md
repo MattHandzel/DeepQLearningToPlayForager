@@ -8,8 +8,7 @@ The motivation behind this project is that a lot of the mechanics in the game re
 Here is how it works: (which is REALLY inefficient, but hey, I wanted it work on my local save file)
 
 Because I had the game on my phone I used scrcpy to mirror my phone screen onto my computer, and I used computer vision to read the game state from the pixels on screen. I have an **environment** class that manages all of this:
-
-![7ukj0n](https://github.com/MattHandzel/PlayingForager/assets/39449480/f0402d6a-92ac-4474-9d36-439a50d272dd)
+![lower1](https://github.com/MattHandzel/DeepQLearningToPlayForager/assets/39449480/30cae8a8-7ca2-4450-a0f1-d784034527f9)
 
 The notable states for this project is the agent's health, current experience points, as well as their energy. When these values change then the environment can detect this and let the agent know.
 
@@ -25,5 +24,4 @@ With the current state of the project, the agent gets penalized 0.01 reward for 
 The agent is trained using Deep Q Learning and uses an epsilon-greedy strategy:
 
 ε=1
-![lower](https://github.com/MattHandzel/DeepQLearningToPlayForager/assets/39449480/41573ba3-5636-4d94-87af-936db5445d5b)
-
+![lower](https://github.com/MattHandzel/DeepQLearningToPlayForager/assets/39449480/ca7bc238-0ed0-47ce-8b94-101fe8b1ffc9)
