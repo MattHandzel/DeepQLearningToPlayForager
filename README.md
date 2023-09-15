@@ -12,7 +12,7 @@ Because I had the game on my phone I used scrcpy to mirror my phone screen onto 
 
 The notable states for this project is the agent's health, current experience points, as well as their energy. When these values change then the environment can detect this and let the agent know.
 
-The agent also sees a black-and-white area surrounding it as the input:
+The agent also sees a black-and-white area surrounding it as the input (50,50):
 
 ![image](https://github.com/MattHandzel/PlayingForager/assets/39449480/0992fab5-0f79-49df-b2a9-71121997339b)
 
@@ -21,7 +21,8 @@ From that, it outputs two vectors, the first one being the movement vector and t
 With the current state of the project, the agent gets penalized 0.01 reward for every timestep and it gains reward whenever it mines a resource (the better the resource the more reward) this is tracked through the experience points the agent.
 
 ## Training
-The agent is trained using Deep Q Learning and uses an epsilon-greedy strategy:
+The agent is trained using Deep Q Learning and uses an epsilon-greedy strategy, meaning that in the beginning during training the agent moves around mostly randomly, and as training progress it makes more and more purposeful actions:
 
 ε=1
 ![lower](https://github.com/MattHandzel/DeepQLearningToPlayForager/assets/39449480/ca7bc238-0ed0-47ce-8b94-101fe8b1ffc9)
+
